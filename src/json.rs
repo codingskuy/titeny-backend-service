@@ -47,3 +47,25 @@ where
         }
     }
 }
+
+/// Ekstraktor query string; tipe salah -> 400 berbahasa Indonesia.
+pub struct Kueri<T>(pub T);
+
+impl<T, S> axum::extract::FromRequestParts<S> for Kueri<T>
+where
+    T: DeserializeOwned,
+    S: Send + Sync,
+{
+    type Rejection = AppError;
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        _state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        serde_urlencoded::from_str::<T>(parts.uri.query().unwrap_or(""))
+            .map(Kueri)
+            .map_err(|_| {
+                AppError::PermintaanBuruk("Parameter query tidak sah (salah tipe).".into())
+            })
+    }
+}

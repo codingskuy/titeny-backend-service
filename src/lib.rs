@@ -6,6 +6,7 @@ pub mod config;
 pub mod db;
 pub mod error;
 pub mod event;
+pub mod insight;
 pub mod json;
 pub mod ratelimit;
 pub mod state;

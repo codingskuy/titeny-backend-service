@@ -279,7 +279,7 @@ fn baca<T: for<'de> Deserialize<'de>>(payload: &Value) -> Result<T, Ditolak> {
     })
 }
 
-fn id_sah(s: &str, awalan: &str) -> bool {
+pub fn id_sah(s: &str, awalan: &str) -> bool {
     s.len() > awalan.len()
         && s.len() <= 64
         && s.starts_with(awalan)

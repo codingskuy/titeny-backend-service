@@ -9,6 +9,7 @@ Format: satu seksi per rilis, terbaru di atas. Wajib diperbarui pada setiap comm
 - Kontrak OpenAPI 3.1 v1.0.0 (`docs/api/openapi.yaml`) + referensi Scalar (`docs/api/index.html`) dan seksi "Dokumentasi API" di README.
 - TTN-BE-004: auth JWT HS256 `aud=titeny` `iss=chefgenie-auth` (akses 15 menit, refresh 7 hari berkeluarga dengan reuse-detection), login analis/CEO dengan OTP (sesi analis maks 8 jam), token layanan least-privilege, PIN zona 6 digit (`X-Zona-PIN`), pembatas laju 60/menit (429 + `Retry-After`), `AppError` dengan 6 kode galat baku, router `/api/v1` dan ADR-0002.
 - TTN-BE-002: `POST /api/v1/event/masuk` menerima 11 event terkunci dengan validasi amplop+payload, idempotensi per tipe (`event_id` atau kunci per tipe), 200 `duplikat_diabaikan`, 422 `{status, alasan, field}`; migrasi `003_event.sql` (tabel `event_masuk`).
+- TTN-BE-003: `GET /api/v1/{harga,demand,panen,rekomendasi,kesehatan}` (alias `/v1/kesehatan`) dengan `Cache-Control` 6 jam (kesehatan 30 detik), paginasi `limit`/`cursor` opaque, galat baku, batasan PIN zona; migrasi `004_insight.sql` (tabel prediksi dan rekomendasi).
 
 ### Diubah
 - Migrasi Axum 0.7.9 ke 0.8.4; kode lama `/ingest/event` dan `/insight/*` dihapus (diganti `/api/v1/*` pada tiket berikutnya).
