@@ -12,3 +12,4 @@ Aturan menambah ADR:
 | ADR | Judul | Status |
 |---|---|---|
 | [ADR-0001](./ADR-0001-fondasi-teknis.md) | Fondasi teknis | Diterima |
+| [ADR-0002](./ADR-0002-auth-jwt-pin-ratelimit.md) | Auth JWT `aud=titeny`, PIN zona, pembatas laju | Diterima |

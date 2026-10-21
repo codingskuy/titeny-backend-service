@@ -81,7 +81,8 @@ paths:
         Memverifikasi kata sandi (argon2). Untuk peran `ceo` dan `analis`, server
         mengirim OTP dan mengembalikan `sesi_id`; token terbit setelah
         `POST /api/v1/auth/otp/verifikasi`. Endpoint turunan dari model JWT
-        (BR-005); path tidak tercantum di FSD/30.
+        (BR-005); path tidak tercantum di FSD/30. Token layanan hanya berlaku untuk
+        `POST /api/v1/event/masuk` (least-privilege); memakainya di endpoint baca dijawab 403.
       requestBody:
         required: true
         content:
@@ -89,10 +90,16 @@ paths:
             schema: { $ref: "#/components/schemas/LoginRequest" }
       responses:
         "200":
-          description: Kredensial benar; OTP dikirim.
+          description: |
+            Kredensial benar. Peran `ceo`/`analis`: OTP dikirim, balasan `LoginTantangan`
+            (`otp_diperlukan: true`). Peran `layanan` (sumber event): tanpa OTP, token
+            langsung terbit (`TokenPasang`). Bedakan lewat keberadaan `access_token`.
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/LoginTantangan" }
+              schema:
+                oneOf:
+                  - { $ref: "#/components/schemas/LoginTantangan" }
+                  - { $ref: "#/components/schemas/TokenPasang" }
         "400": { $ref: "#/components/responses/PermintaanBuruk" }
         "401": { $ref: "#/components/responses/TidakTerautentikasi" }
         "422": { $ref: "#/components/responses/ValidasiGagal" }
