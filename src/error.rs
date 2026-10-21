@@ -11,6 +11,8 @@ use serde_json::json;
 pub enum AppError {
     #[error("permintaan buruk: {0}")]
     PermintaanBuruk(String),
+    #[error("bodi terlalu besar")]
+    BodiBesar,
     #[error("validasi gagal: {pesan}")]
     Validasi {
         pesan: String,
@@ -71,6 +73,12 @@ impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {
             Self::PermintaanBuruk(p) => galat(StatusCode::BAD_REQUEST, "validasi_gagal", &p, None),
+            Self::BodiBesar => galat(
+                StatusCode::PAYLOAD_TOO_LARGE,
+                "validasi_gagal",
+                "Bodi melebihi 256 KB.",
+                None,
+            ),
             Self::Validasi { pesan, field } => galat(
                 StatusCode::UNPROCESSABLE_ENTITY,
                 "validasi_gagal",

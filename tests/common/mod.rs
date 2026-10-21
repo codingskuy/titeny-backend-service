@@ -109,3 +109,16 @@ pub async fn sisip_pin(db: &PgPool, config: &Config, zona: &str, peran: &str, pi
         .await
         .unwrap();
 }
+
+pub fn token(state: &AppState, peran: titeny::auth::Peran) -> String {
+    format!(
+        "Bearer {}",
+        titeny::auth::jwt::terbitkan(
+            &state.config,
+            Uuid::new_v4(),
+            peran,
+            chrono::Utc::now().timestamp()
+        )
+        .unwrap()
+    )
+}
