@@ -482,6 +482,7 @@ paths:
       operationId: antreanValidasi
       summary: Antrean flag perlu_verifikasi
       description: |
+        Hanya `analis`. Event `perlu_verifikasi` yang belum diputuskan, terlama dulu.
         Daftar flag `perlu_verifikasi` (harga di luar rentang, stok selisih > 1%,
         panen outlier) untuk desktop analis; polling 5 menit. Path turunan dari
         FSD/10 butir 4 (FSD/30 hanya menamai dua endpoint tulis analis).
@@ -513,6 +514,12 @@ paths:
       description: |
         Idempoten dengan `aksi_id`. Alasan wajib 10-140 karakter. Tercatat di log
         audit 2 tahun (siapa, kapan, apa, alasan) yang tidak dapat dihapus analis.
+
+        Hanya peran `analis`. `X-Idempotency-Key` wajib dan sama dengan `aksi_id` (422 bila beda).
+        `nilai_baru` wajib (> 0) untuk `koreksi_nilai` dan dilarang untuk keputusan lain (422).
+        409: event tidak berstatus `perlu_verifikasi`, event sudah diputuskan dengan `aksi_id` lain,
+        atau `aksi_id` sudah dipakai untuk jenis aksi lain. 404: `event_id` tidak ada.
+        Keputusan tidak mengubah angka event/model; hanya mencatat putusan.
       security:
         - bearerAuth: []
       parameters:
@@ -553,6 +560,10 @@ paths:
       description: |
         Menyembunyikan pasangan komoditas-pasar dari papan petani; tidak mengubah
         angka. Kedaluwarsa otomatis paling lambat 7 hari. Idempoten dengan `aksi_id`.
+
+        Hanya peran `analis`. `berlaku_sampai` dari hari ini (WIB) sampai maksimal +7 hari, selain itu 422.
+        Penahanan hanya menyembunyikan `GET /harga` untuk papan PIN zona (dijawab 404
+        `data_belum_cukup`); CEO/analis tetap melihat angka. Berhenti berlaku setelah tanggalnya lewat.
       security:
         - bearerAuth: []
       parameters:
