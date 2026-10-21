@@ -11,7 +11,7 @@ use axum::{
 };
 use tower_http::{timeout::TimeoutLayer, trace::TraceLayer};
 
-use crate::{auth, event, insight, ratelimit, state::AppState};
+use crate::{analis, auth, event, insight, ratelimit, state::AppState};
 
 /// Bodi maks 256 KB (FSD/30).
 pub const BATAS_BODI: usize = 256 * 1024;
@@ -26,7 +26,10 @@ pub fn router(state: AppState) -> Router {
         .route("/demand", get(insight::demand::demand))
         .route("/panen", get(insight::panen::panen))
         .route("/rekomendasi", get(insight::rekomendasi::rekomendasi))
-        .route("/kesehatan", get(insight::kesehatan::kesehatan));
+        .route("/kesehatan", get(insight::kesehatan::kesehatan))
+        .route("/analis/antrean", get(analis::antrean))
+        .route("/analis/validasi", post(analis::validasi))
+        .route("/analis/tahan", post(analis::tahan));
     pelengkap(
         Router::new()
             .nest("/api/v1", v1)

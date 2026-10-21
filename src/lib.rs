@@ -1,5 +1,6 @@
 //! titeny-backend-service: pintu masuk event, API baca insight, aksi analis, auth.
 
+pub mod analis;
 pub mod app;
 pub mod auth;
 pub mod config;

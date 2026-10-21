@@ -303,7 +303,7 @@ fn nonneg(v: f64) -> bool {
     v.is_finite() && v >= 0.0
 }
 
-fn format_event_id(s: &str) -> bool {
+pub fn format_event_id(s: &str) -> bool {
     let b = s.as_bytes();
     b.len() == 19
         && s.starts_with("evt_")

@@ -68,6 +68,23 @@ pub async fn harga(
         ));
     }
 
+    // Penahanan analis (TTN-BE-005) hanya menyembunyikan tayangan untuk papan petani/vendor (PIN);
+    // angka model tidak diubah dan CEO/analis tetap melihatnya.
+    if pelaku.zona_terbatas().is_some() {
+        let ditahan: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM tahan_prediksi
+                           WHERE komoditas_id = $1 AND pasar_id = $2 AND berlaku_sampai >= $3)",
+        )
+        .bind(&komoditas)
+        .bind(&pasar)
+        .bind(hari_ini)
+        .fetch_one(&s.db)
+        .await?;
+        if ditahan {
+            return Err(AppError::DataBelumCukup("Data harga belum cukup.".into()));
+        }
+    }
+
     let baris: Vec<Baris> = sqlx::query_as(
         "SELECT tanggal_prediksi, horizon, harga_prediksi, rentang_bawah, rentang_atas, kepercayaan,
                 alasan_singkat, model_version, dihitung_pada
