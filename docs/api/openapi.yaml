@@ -256,7 +256,12 @@ paths:
       description: |
         12 komoditas x 8 pasar, dihitung 04.00 WIB (hitung ulang 15.00 bila ada
         koreksi siang). Harga dibulatkan kelipatan 500 IDR. `kepercayaan: rendah`
-        wajib memunculkan lencana "Akurasi terbatas" di papan. Cache 6 jam.
+        wajib memunculkan lencana "Akurasi terbatas" di papan. Cache 6 jam
+        (`Vary: Authorization, X-Zona-PIN`).
+
+        `komoditas_id` wajib; `pasar_id` wajib untuk CEO/analis (untuk PIN zona diisi otomatis
+        dengan zonanya, pasar lain 403). Tanpa `dari`/`sampai`: hari ini sampai H+7.
+        Komoditas/pasar tak dikenal 404 `tidak_ditemukan`; pasangan tanpa data 404 `data_belum_cukup`.
       security:
         - zonaPin: []
         - bearerAuth: []
@@ -297,6 +302,9 @@ paths:
         Demand 12 komoditas per zona (8 zona rute TitipO + 8 pasar Pasaree),
         dihitung 04.30 WIB. MAPE H+7 <= 15%, H+30 <= 22% (pantau). `sinyal`:
         `surplus` (panen >= 120% demand), `defisit` (panen <= 80% demand), selain itu `seimbang`.
+
+        `komoditas_id` dan `zona` wajib (PIN zona: `zona` otomatis zonanya, zona lain 403);
+        `horizon` default `H+7_total_kg`. Mengembalikan prediksi dengan tanggal terbaru.
       security:
         - zonaPin: []
         - bearerAuth: []
@@ -332,6 +340,9 @@ paths:
       operationId: bacaPanen
       summary: Prediksi panen mingguan M+1 sampai M+4
       description: |
+        Paginasi keyset: `limit` (default 50, maks 200) dan `cursor` opaque; `next_cursor` null
+        di halaman terakhir. Untuk PIN zona, `kabupaten_id` otomatis zonanya.
+
         6 komoditas (padi, jagung, cabai merah, cabai rawit, bawang merah, tomat)
         x 5 kabupaten (Karawang, Subang, Garut, Brebes, Malang), dihitung Senin
         03.00 WIB. Dibulatkan kelipatan 50 kg. MAPE total musim <= 20%.
@@ -347,6 +358,13 @@ paths:
           in: query
           description: Minggu ISO.
           schema: { type: string, pattern: "^\\d{4}-W\\d{2}$", examples: ["2026-W41"] }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: cursor
+          in: query
+          description: Cursor opaque dari `next_cursor` sebelumnya.
+          schema: { type: string }
       responses:
         "200":
           description: Prediksi panen.
@@ -737,7 +755,10 @@ components:
       required: [status, job_terakhir, versi_api]
       properties:
         status: { type: string, enum: [ok] }
-        job_terakhir: { type: string, format: date-time }
+        job_terakhir:
+          type: [string, "null"]
+          format: date-time
+          description: Waktu hitung prediksi terbaru; `null` bila belum ada prediksi.
         versi_api: { type: string, examples: [v1.0.0] }
 
     # ---------- auth
@@ -1045,6 +1066,7 @@ components:
           type: array
           items: { $ref: "#/components/schemas/PrediksiPanen" }
         dihitung_pada: { type: string, format: date-time }
+        next_cursor: { type: [string, "null"] }
 
     # ---------- rekomendasi, umpan-balik, analis
     Rekomendasi:
