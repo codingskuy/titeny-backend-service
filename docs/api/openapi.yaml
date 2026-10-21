@@ -170,6 +170,12 @@ paths:
         - Duplikat dijawab 200 `duplikat_diabaikan` (bukan galat).
         - Validasi gagal: perbaiki dan kirim ulang dengan `event_id` baru.
         - `pedaree.stok.v1` bukan bagian registry ini.
+        - Bodi maks 256 KB (413 bila lebih). `harga.diperbarui` dengan `jumlah_sampel_lapak` < 3
+          wajib `flag: perlu_verifikasi` (diterima dan masuk antrean analis; selain itu 422).
+          `panen.dicatat` dengan hasil/ha di luar 500-15.000 kg/ha wajib `keterangan` (diterima
+          bertanda `perlu_verifikasi`; tanpa keterangan 422). `transaksi.dibuat` `qty_kg` > 50 ditolak 422.
+        - Hanya token layanan (`peran: layanan`); peran lain 403. Header `X-Idempotency-Key` tidak sama
+          dengan `event_id` dijawab 422 (`field: X-Idempotency-Key`).
       security:
         - bearerAuth: []
       parameters:
