@@ -3,12 +3,41 @@ name = "titeny-backend-service"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "titeny"
+path = "src/lib.rs"
+
+[[bin]]
+name = "titeny-backend-service"
+path = "src/main.rs"
+
 [dependencies]
-axum = "0.7.9"
+axum = "0.8.4"
 tokio = { version = "1.42.0", features = ["full"] }
-sqlx = { version = "0.8.3", features = ["postgres", "runtime-tokio-rustls", "migrate"] }
+sqlx = { version = "0.8.3", features = ["postgres", "runtime-tokio-rustls", "migrate", "uuid", "chrono", "json", "macros"] }
 serde = { version = "1.0.215", features = ["derive"] }
 serde_json = "1.0.133"
-tower = "0.5.2"
+serde_path_to_error = "0.1"
+tower = { version = "0.5.2", features = ["util"] }
+tower-http = { version = "0.6", features = ["trace", "timeout", "limit"] }
 tracing = "0.1.40"
-tracing-subscriber = "0.3.19"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+jsonwebtoken = "9"
+argon2 = "0.5"
+sha2 = "0.10"
+hex = "0.4"
+rand = "0.8"
+base64 = "0.22"
+thiserror = "2"
+async-trait = "0.1"
+
+[dev-dependencies]
+http-body-util = "0.1"
+
+# Argon2 di build debug sangat lambat tanpa optimasi (uji auth).
+[profile.dev.package.argon2]
+opt-level = 3
+[profile.dev.package.blake2]
+opt-level = 3

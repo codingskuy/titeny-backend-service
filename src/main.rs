@@ -1,18 +1,33 @@
-mod db;
-mod insight;
+use std::{net::SocketAddr, sync::Arc};
 
-use axum::{routing::{get, post}, Router};
+use titeny::{app, auth::otp::PengirimLog, config::Config, db, state::AppState};
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()),
+        )
+        .init();
+    let config = Config::dari_env().unwrap_or_else(|e| {
+        eprintln!("konfigurasi tidak sah: {e}");
+        std::process::exit(1);
+    });
     let pool = db::connect().await;
-    let app = Router::new()
-        .route("/health", get(|| async { "ok" }))
-        .route("/insight/ringkas", get(insight::ringkas))
-        .route("/insight/harga", get(insight::harga))
-        .route("/ingest/event", post(insight::terima_event))
-        .with_state(pool);
-    let l = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
-    axum::serve(l, app).await.unwrap();
+    sqlx::migrate!().run(&pool).await.expect("migrasi gagal");
+    let pengirim = Arc::new(PengirimLog {
+        aktif: config.otp_log_dev,
+    });
+    let bind = config.bind_addr.clone();
+    let router = app::router(AppState::baru(pool, config, pengirim));
+    let l = tokio::net::TcpListener::bind(&bind)
+        .await
+        .expect("gagal bind");
+    tracing::info!(%bind, "titeny-backend-service berjalan");
+    axum::serve(
+        l,
+        router.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .expect("server berhenti");
 }
